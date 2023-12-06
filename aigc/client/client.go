@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"strings"
 	"time"
@@ -20,7 +19,7 @@ func GetJSON(url string, target interface{}) error {
 		return err
 	}
 
-	b, err := ioutil.ReadAll(resp.Body)
+	b, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return fmt.Errorf("get failed: %w", err)
 	}
@@ -34,7 +33,7 @@ func GetJSON(url string, target interface{}) error {
 }
 
 // PostJSON will send post request to ai backend, and parse json response
-func PostJSON(url string, body interface{}) error {
+func PostJSON(url string, body interface{}, target interface{}) error {
 	var bodyReader io.Reader = nil
 	if body != nil {
 		b, err := json.Marshal(body)
@@ -49,9 +48,14 @@ func PostJSON(url string, body interface{}) error {
 		return fmt.Errorf("post failed: %w", err)
 	}
 
-	_, err = ioutil.ReadAll(resp.Body)
+	b, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return err
+	}
+
+	err = json.Unmarshal(b, target)
+	if err != nil {
+		return fmt.Errorf("unmarshal failed: %w", err)
 	}
 
 	return nil

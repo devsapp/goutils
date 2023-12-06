@@ -65,7 +65,7 @@ func (c *Client) SendLogs(logs []Log) error {
 		}
 	}
 
-	return ai.PostJSON(fmt.Sprintf("/collect/log"), logs)
+	return ai.PostJSON(fmt.Sprintf("/collect/log"), logs, nil)
 }
 
 // SendTrackers sends a series of trackers
@@ -91,7 +91,7 @@ func (c *Client) SendTrackers(trackers []Tracker) error {
 		}
 	}
 
-	return ai.PostJSON("/collect/tracker", trackers)
+	return ai.PostJSON("/collect/tracker", trackers, nil)
 }
 
 // SendTracker will send one track
