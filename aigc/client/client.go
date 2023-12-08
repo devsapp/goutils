@@ -14,7 +14,7 @@ var httpClient = http.Client{Timeout: 5 * time.Second}
 
 // GetJSON will send get request to ai backend, and parse json response
 func GetJSON(url string, target interface{}) error {
-	resp, err := httpClient.Get(withEndpoint(url))
+	resp, err := httpClient.Get(WithEndpoint(url))
 	if err != nil {
 		return err
 	}
@@ -43,7 +43,7 @@ func PostJSON(url string, body interface{}, target interface{}) error {
 		bodyReader = bytes.NewBuffer(b)
 	}
 
-	resp, err := httpClient.Post(withEndpoint(url), "application/json", bodyReader)
+	resp, err := httpClient.Post(WithEndpoint(url), "application/json", bodyReader)
 	if err != nil {
 		return fmt.Errorf("post failed: %w", err)
 	}
@@ -61,8 +61,8 @@ func PostJSON(url string, body interface{}, target interface{}) error {
 	return nil
 }
 
-// withEndpoint returns full url with endpoint
-func withEndpoint(url string) string {
+// WithEndpoint returns full url with endpoint
+func WithEndpoint(url string) string {
 	if strings.HasPrefix(url, "/") {
 		return fmt.Sprintf("%s%s", endpoint, url)
 	}
