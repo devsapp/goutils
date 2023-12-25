@@ -1,51 +1,29 @@
 package fc
 
 import (
-	"github.com/alibabacloud-go/tea/tea"
-
-	fc_open20210406 "github.com/alibabacloud-go/fc-open-20210406/v2/client"
-	util "github.com/alibabacloud-go/tea-utils/v2/service"
+	"fmt"
 )
 
 // ListFunctions list all functions in a service
-func (c *Client) ListFunctions(serviceName string) ([]*fc_open20210406.ListFunctionsResponseBodyFunctions, error) {
-	funcs := make([]*fc_open20210406.ListFunctionsResponseBodyFunctions, 0)
-	var token *string
-
-	for {
-		listFunctionsHeaders := &fc_open20210406.ListFunctionsHeaders{}
-		listFunctionsRequest := &fc_open20210406.ListFunctionsRequest{NextToken: token}
-		runtime := &util.RuntimeOptions{}
-
-		resp, err := c.client.ListFunctionsWithOptions(tea.String(serviceName), listFunctionsRequest, listFunctionsHeaders, runtime)
-		if err != nil {
-			return nil, err
-		}
-
-		for _, function := range resp.Body.Functions {
-			funcs = append(funcs, function)
-		}
-
-		if resp.Body.NextToken == nil {
-			break
-		}
-
-		token = resp.Body.NextToken
+func (c *Client) ListFunctions(serviceOrPrefix string) ([]*Function, error) {
+	if c.clientV2 != nil {
+		return c.listFunctionV2(serviceOrPrefix)
+	}
+	if c.clientV3 != nil {
+		return c.listFunctionV3(serviceOrPrefix)
 	}
 
-	return funcs, nil
+	return nil, fmt.Errorf("client is not initialized")
 }
 
 // GetFunction get function info
-func (c *Client) GetFunction(serviceName, functionName string) (*fc_open20210406.GetFunctionResponseBody, error) {
-	getFunctionHeaders := &fc_open20210406.GetFunctionHeaders{}
-	getFunctionRequest := &fc_open20210406.GetFunctionRequest{}
-	runtime := &util.RuntimeOptions{}
-
-	resp, err := c.client.GetFunctionWithOptions(tea.String(serviceName), tea.String(functionName), getFunctionRequest, getFunctionHeaders, runtime)
-	if err != nil {
-		return nil, err
+func (c *Client) GetFunction(serviceNameOrEmpty, functionName string) (*Function, error) {
+	if c.clientV2 != nil {
+		return c.GetFunctionV2(serviceNameOrEmpty, functionName)
+	}
+	if c.clientV3 != nil {
+		return c.GetFunctionV3(functionName)
 	}
 
-	return resp.Body, nil
+	return nil, fmt.Errorf("client is not initialized")
 }

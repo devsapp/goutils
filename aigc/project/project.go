@@ -4,17 +4,18 @@ import (
 	"fmt"
 	"strings"
 
-	fc_open20210406 "github.com/alibabacloud-go/fc-open-20210406/v2/client"
 	gr "github.com/awesome-fc/golang-runtime"
 	"github.com/devsapp/goutils/fc"
 	"github.com/sirupsen/logrus"
 )
 
+const PrefixDelimiter = "__"
+
 // T is a struct for project functions
 type T struct {
-	StableDiffusion *fc_open20210406.ListFunctionsResponseBodyFunctions `json:"stable_diffusion"`
-	Filemgr         *fc_open20210406.ListFunctionsResponseBodyFunctions `json:"filemgr"`
-	Lora            *fc_open20210406.ListFunctionsResponseBodyFunctions `json:"lora"`
+	StableDiffusion *fc.Function `json:"stable_diffusion"`
+	Filemgr         *fc.Function `json:"filemgr"`
+	Lora            *fc.Function `json:"lora"`
 }
 
 // Get project functions
@@ -25,25 +26,36 @@ func Get(ctx *gr.FCContext) T {
 	if err != nil {
 		logrus.Errorf("fc client failed, due to %s", err)
 	} else {
-		funcs, err := client.ListFunctions(ctx.Service.ServiceName)
+		serviceNameOrPrefix := ctx.Service.ServiceName
+		if serviceNameOrPrefix == "" {
+			parts := strings.Split(ctx.Function.Name, PrefixDelimiter)
+			if len(parts) >= 1 {
+				serviceNameOrPrefix = parts[0]
+			}
+		}
+
+		funcs, err := client.ListFunctions(serviceNameOrPrefix)
 		if err != nil {
 			logrus.Errorf("list function failed, due to %s", err)
 		} else {
-			mayFilemgr := make([]*fc_open20210406.ListFunctionsResponseBodyFunctions, 0)
-			mayStableDiffusion := make([]*fc_open20210406.ListFunctionsResponseBodyFunctions, 0)
+			mayFilemgr := make([]*fc.Function, 0)
+			mayStableDiffusion := make([]*fc.Function, 0)
 
 			for _, function := range funcs {
-				fmt.Println(*function.FunctionName, ctx.Function.Name)
-				if function.CustomContainerConfig != nil && function.CustomContainerConfig.Image != nil && strings.Contains(*function.CustomContainerConfig.Image, "kohya_ss") {
-					fmt.Println(*function.FunctionName, "lora")
+				if withImage("kohya_ss", function) {
+					// 使用 kohya_ss 镜像, 说明是 lora 函数
 					t.Lora = function
-				} else if *function.FunctionName == "sd" {
+				} else if withFunctionName("sd", serviceNameOrPrefix, *function.FunctionName) {
+					// 函数名为 sd，说明是 sd 函数
 					t.StableDiffusion = function
-				} else if function.CustomContainerConfig != nil && function.CustomContainerConfig.Image != nil && strings.Contains(*function.CustomContainerConfig.Image, "fc-stable-diffusion") && !strings.Contains(*function.CustomContainerConfig.Image, "kohya_ss") {
+				} else if withImage("fc-stable-diffusion", function) && !withImage("kohya_ss", function) {
+					// 镜像名为 fc-stable-diffusion 并且不是 kohya_ss，说明可能是 sd 函数
 					mayStableDiffusion = append(mayStableDiffusion, function)
-				} else if function.GpuMemorySize == nil && *function.Runtime == "custom" && len(function.Layers) > 0 {
+				} else if function.GpuConfig == nil && *function.Runtime == "custom" && len(function.Layers) > 0 {
+					// 不是 gpu，是 custom runtime 并且有 layers，说明可能是文件管理器
 					mayFilemgr = append(mayFilemgr, function)
-					if *function.FunctionName == "admin" {
+					if withFunctionName("admin", serviceNameOrPrefix, *function.FunctionName) {
+						// 如果函数是 admin，则一定是文件管理器
 						t.Filemgr = function
 					}
 				}
@@ -59,4 +71,17 @@ func Get(ctx *gr.FCContext) T {
 	}
 
 	return t
+}
+
+// withFunctionName is match, support fc v2 and fc v3
+func withFunctionName(wantFunctionName, prefix, functionName string) bool {
+	if fc.IsV3() {
+		return wantFunctionName == fmt.Sprintf("%s%s%s", prefix, PrefixDelimiter, functionName)
+	}
+
+	return wantFunctionName == functionName
+}
+
+func withImage(wantImage string, f *fc.Function) bool {
+	return f != nil && f.CustomContainerConfig != nil && f.CustomContainerConfig.Image != nil && strings.Contains(*f.CustomContainerConfig.Image, wantImage)
 }

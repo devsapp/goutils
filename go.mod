@@ -17,6 +17,7 @@ require (
 	github.com/alibabacloud-go/alibabacloud-gateway-spi v0.0.4 // indirect
 	github.com/alibabacloud-go/debug v0.0.0-20190504072949-9472017b5c68 // indirect
 	github.com/alibabacloud-go/endpoint-util v1.1.0 // indirect
+	github.com/alibabacloud-go/fc-20230330/v3 v3.0.2 // indirect
 	github.com/alibabacloud-go/openapi-util v0.1.0 // indirect
 	github.com/alibabacloud-go/tea-utils v1.3.1 // indirect
 	github.com/alibabacloud-go/tea-xml v1.1.2 // indirect
