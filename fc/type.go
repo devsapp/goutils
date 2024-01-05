@@ -30,59 +30,59 @@ type GPUConfig struct {
 
 func (f *Function) FromV2(function interface{}) *Function {
 	switch f2 := function.(type) {
-	case fc2.ListFunctionsResponseBodyFunctions:
-		f.FunctionName = tea.String(*f2.FunctionName)
-		f.Runtime = tea.String(*f2.Runtime)
+	case *fc2.ListFunctionsResponseBodyFunctions:
+		f.FunctionName = f2.FunctionName
+		f.Runtime = f2.Runtime
 		f.Layers = make([]*string, 0)
 
 		f.CustomContainerConfig = nil
 		if f2.CustomContainerConfig != nil {
 			f.CustomContainerConfig = &CustomContainerConfig{
-				Entrypoint: []*string{tea.String(*f2.CustomContainerConfig.Command)},
-				Command:    []*string{tea.String(*f2.CustomContainerConfig.Args)},
-				Image:      tea.String(*f2.CustomContainerConfig.Image),
+				Entrypoint: []*string{f2.CustomContainerConfig.Command},
+				Command:    []*string{f2.CustomContainerConfig.Args},
+				Image:      f2.CustomContainerConfig.Image,
 			}
 		}
 
 		f.GpuConfig = nil
 		if *f2.GpuMemorySize != 0 {
 			f.GpuConfig = &GPUConfig{
-				GpuMemorySize: tea.Int32(*f2.GpuMemorySize),
-				GpuType:       tea.String(*f2.InstanceType),
+				GpuMemorySize: f2.GpuMemorySize,
+				GpuType:       f2.InstanceType,
 			}
 		}
 
 		for _, l := range f2.Layers {
-			f.Layers = append(f.Layers, tea.String(*l))
+			f.Layers = append(f.Layers, l)
 		}
 
 		f.EnvironmentVariables = make(map[string]*string)
 		for k, v := range f2.EnvironmentVariables {
 			f.EnvironmentVariables[k] = v
 		}
-	case fc2.GetFunctionResponseBody:
-		f.FunctionName = tea.String(*f2.FunctionName)
-		f.Runtime = tea.String(*f2.Runtime)
+	case *fc2.GetFunctionResponseBody:
+		f.FunctionName = f2.FunctionName
+		f.Runtime = f2.Runtime
 
 		f.CustomContainerConfig = nil
 		if f2.CustomContainerConfig != nil {
 			f.CustomContainerConfig = &CustomContainerConfig{
-				Entrypoint: []*string{tea.String(*f2.CustomContainerConfig.Command)},
-				Command:    []*string{tea.String(*f2.CustomContainerConfig.Args)},
-				Image:      tea.String(*f2.CustomContainerConfig.Image),
+				Entrypoint: []*string{f2.CustomContainerConfig.Command},
+				Command:    []*string{f2.CustomContainerConfig.Args},
+				Image:      f2.CustomContainerConfig.Image,
 			}
 		}
 
 		f.GpuConfig = nil
 		if *f2.GpuMemorySize != 0 {
 			f.GpuConfig = &GPUConfig{
-				GpuMemorySize: tea.Int32(*f2.GpuMemorySize),
-				GpuType:       tea.String(*f2.InstanceType),
+				GpuMemorySize: f2.GpuMemorySize,
+				GpuType:       f2.InstanceType,
 			}
 		}
 
 		for _, l := range f2.Layers {
-			f.Layers = append(f.Layers, tea.String(*l))
+			f.Layers = append(f.Layers, l)
 		}
 
 		f.EnvironmentVariables = make(map[string]*string)
