@@ -45,7 +45,7 @@ func (f *Function) FromV2(function interface{}) *Function {
 		}
 
 		f.GpuConfig = nil
-		if *f2.GpuMemorySize != 0 {
+		if f2.GpuMemorySize != nil && *f2.GpuMemorySize != 0 {
 			f.GpuConfig = &GPUConfig{
 				GpuMemorySize: f2.GpuMemorySize,
 				GpuType:       f2.InstanceType,
@@ -74,7 +74,7 @@ func (f *Function) FromV2(function interface{}) *Function {
 		}
 
 		f.GpuConfig = nil
-		if *f2.GpuMemorySize != 0 {
+		if f2.GpuMemorySize != nil && *f2.GpuMemorySize != 0 {
 			f.GpuConfig = &GPUConfig{
 				GpuMemorySize: f2.GpuMemorySize,
 				GpuType:       f2.InstanceType,
