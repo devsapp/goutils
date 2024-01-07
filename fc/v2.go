@@ -34,7 +34,7 @@ func (c *Client) listFunctionV2(serviceName string) ([]*Function, error) {
 	return funcs, nil
 }
 
-func (c *Client) GetFunctionV2(serviceName, functionName string) (*Function, error) {
+func (c *Client) GetFunctionV2Raw(serviceName, functionName string) (*fc2.GetFunctionResponseBody, error) {
 	getFunctionHeaders := &fc2.GetFunctionHeaders{}
 	getFunctionRequest := &fc2.GetFunctionRequest{}
 	runtime := &util.RuntimeOptions{}
@@ -44,5 +44,14 @@ func (c *Client) GetFunctionV2(serviceName, functionName string) (*Function, err
 		return nil, err
 	}
 
-	return new(Function).FromV2(resp.Body), nil
+	return resp.Body, nil
+}
+
+func (c *Client) GetFunctionV2(serviceName, functionName string) (*Function, error) {
+	f, err := c.GetFunctionV2Raw(serviceName, functionName)
+	if err != nil {
+		return nil, err
+	}
+
+	return new(Function).FromV2(f), nil
 }
